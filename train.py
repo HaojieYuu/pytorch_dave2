@@ -113,7 +113,7 @@ for epoch in range(n_epochs):
 			t_load, t_fwd, t_bwd, t_upd),end = '   ')
 
 		if (i_batched+1) % (print_every+1) == 0:
-			print("\nEpoch {}, {:d}% \t train_loss: {:.6f} took: {:.2f}s".format(
+			print("\nEpoch: {}, {:d}% \t train_loss: {:.6f} took: {:.2f}s".format(
 				epoch + 1, int(100 * (i_batched + 1) / n_minibatches), running_loss / count,
 				time.time() - start_time))
 			running_loss = 0.0
