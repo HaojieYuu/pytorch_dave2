@@ -95,7 +95,7 @@ with torch.no_grad():
 	cv2.destroyAllWindows()
 
 	#print loss
-	print('testing finished, took {:.2f}s, mean loss: {:.6f}'.format(time.time() - start_time, np.mean(test_history)))
+	print('\ntesting finished, took {:.2f}s, mean loss: {:.6f}'.format(time.time() - start_time, np.mean(test_history)))
 	x = np.arange(1, len(test_history) + 1)
 	plt.figure(2)
 	plt.plot(x, test_history)
