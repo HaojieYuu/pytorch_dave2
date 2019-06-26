@@ -133,7 +133,7 @@ for epoch in range(n_epochs):
 					}, best_model_path)
 
 #print evalution of loss
-print("Training Finished, took {:.2f}s".format(time.time() - training_start_time))
+print("\nTraining Finished, took {:.2f}s".format(time.time() - training_start_time))
 x = np.arange(1, len(train_history) + 1)
 plt.figure()
 plt.plot(x, train_history)
