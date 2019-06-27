@@ -4,6 +4,7 @@ from model import Net
 from torch.utils.data import DataLoader
 from torchvision import transforms, utils
 from lossAndOptimizer import createLossAndOptimizer
+from torchvision import transforms
 import dataLoader
 import numpy as np
 import time
@@ -15,9 +16,9 @@ import os
 import sys
 
 parser = argparse.ArgumentParser(description = 'Evolution of Model')
-parser.add_argument('-m', '--model', help = 'choose model', required = True, type = str)
+parser.add_argument('model', help = 'choose model', type = str)
 parser.add_argument('-b', '--batch_size', help = 'choose batch size', type = int, default = 32)
-parser.add_argument('-n', '--num_workers', help = 'choose number of workers', type = int, default = 4)
+parser.add_argument('-n', '--num_workers', help = 'choose number of workers', type = int, default = 8)
 parser.add_argument('-s', '--shuffle', help = 'decide shuffle or not', action = 'store_true')
 parser.add_argument('-r', '--root_dir', help = 'choose dataset file(image)', type = str, default = '/home/haojieyu/Dave2/Self-Driving-Car-master/driving_dataset')
 parser.add_argument('-t', '--training', help = 'train mode or eval mode', action = 'store_true')
@@ -32,14 +33,14 @@ root_dir = args.root_dir
 txt_file = args.txt_file
 training = args.training
 transforms_composed = transforms.Compose([
-							dataLoader.Rescale((66,200)), 
-							dataLoader.ToTensor(),
-							dataLoader.Normalize()
+							transforms.Resize((66,200)),
+							transforms.ToTensor(),
+							transforms.Normalize((0.5, 0.5, 0.5),(0.5, 0.5, 0.5))
 							])
 driving_dataset = dataLoader.DrivingDataset(root_dir, txt_file, training, transforms_composed)
 driving_dataloader = DataLoader(driving_dataset, batch_size = batch_size, num_workers = num_workers)
 
-checkpoint_path = os.path.join('/home/haojieyu/Pytorch_Dave2/models_history',args.model)
+checkpoint_path = os.path.join('/home/haojieyu/Pytorch_Dave2',args.model)
 steering_wheel = cv2.imread('steering_wheel.jpg', 0)
 rows, cols = steering_wheel.shape[:2]
 
@@ -71,6 +72,8 @@ with torch.no_grad():
 	smoothed_angle = 0
 	for i_batched, sample_batched in enumerate(driving_dataloader, 0):
 		images_batched, steering_angles_batched = sample_batched
+		images_batched = images_batched.float()
+		steering_angles_batched = steering_angles_batched.float()
 		prediction = net(images_batched)
 		loss = criterion(prediction, steering_angles_batched)
 		test_history.append(loss)

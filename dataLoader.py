@@ -4,7 +4,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import utils, transforms
 import numpy as np
 import os
-from skimage import io, transform
+from PIL import Image
 import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings('ignore', category = UserWarning)
@@ -41,15 +41,18 @@ class DrivingDataset(Dataset):
 		return len(self.steering_angle)
 
 	def __getitem__(self, idx):
-		image = io.imread(os.path.join(self.root_dir,self.img_name[idx]))[-150:] / 255.0
-		sample = image, self.steering_angle[idx]
+		image = Image.open(os.path.join(self.root_dir,self.img_name[idx]))
+		w, h = image.size
+
+		image = image.crop((0, 120, w, h))
+		steering_angle = self.steering_angle[idx]
 
 		if self.transform:
-			sample = self.transform(sample)
+			image = self.transform(image)
 
-		return sample
-		# return image
+		return image, steering_angle
 
+'''
 class Rescale(object):
     """Rescale the image in a sample to a given size.
     Args:
@@ -101,31 +104,30 @@ class Normalize(object):
 		#image = tsfm(image)
 		return image, steering_angle
 
-'''
+
 #For test
-batch_size = 8
-num_workers = 4
-shuffle = True
+batch_size = 32
+num_workers = 1
+shuffle = False
 root_dir = '/home/haojieyu/Dave2/Self-Driving-Car-master/driving_dataset'
 txt_file = 'data.txt'
 transforms_composed = transforms.Compose([
-							Rescale((66,200)), 
-							ToTensor(),
-							#Normalize()
+							transforms.Resize((66,200)), 
+							transforms.ToTensor(),
+							transforms.Normalize((0.5, 0.5, 0.5),(0.5, 0.5, 0.5))
 							])
-driving_dataset = DrivingDataset('/home/haojieyu/Dave2/Self-Driving-Car-master/driving_dataset', 'data.txt', training = False, transform = transforms_composed)
+driving_dataset = DrivingDataset('/home/haojieyu/Dave2/Self-Driving-Car-master/driving_dataset', 'data.txt', training = True, transform = transforms_composed)
 driving_dataloader = DataLoader(driving_dataset, batch_size = batch_size, shuffle = shuffle, num_workers = num_workers)
-
 def show_driving_dataloader_batch(sample_batched):
 	images_batched, steering_angles_batched = sample_batched
 	grid = utils.make_grid(images_batched)
 	plt.imshow(grid.numpy().transpose((1, 2, 0)))
-
 if(__name__ == '__main__'):
 	for i_batched, sample_batched in enumerate(driving_dataloader):
 		images_batched, steering_angles_batched = sample_batched
-		print(images_batched[0])
-		if i_batched == 3 :
+		print(images_batched[0].shape)
+		print(steering_angles_batched * 180 / np.pi)
+		if i_batched == 0 :
 			plt.figure()
 			show_driving_dataloader_batch(sample_batched)
 			plt.show()
