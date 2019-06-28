@@ -8,7 +8,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings('ignore', category = UserWarning)
-
+import cv2
 class DrivingDataset(Dataset):
 	"""driving dataset."""
 
@@ -36,15 +36,13 @@ class DrivingDataset(Dataset):
 		else:
 			self.img_name = self.img_name[-int(len(self.img_name) * 0.2) - 1:]
 			self.steering_angle = self.steering_angle[-int(len(self.steering_angle) * 0.2) - 1:]
-
 	def __len__(self):
 		return len(self.steering_angle)
 
 	def __getitem__(self, idx):
-		image = Image.open(os.path.join(self.root_dir,self.img_name[idx]))
-		w, h = image.size
-
-		image = image.crop((0, 120, w, h))
+		image = cv2.imread(os.path.join(self.root_dir,self.img_name[idx]))
+		image = image[120:, :, :]
+		image = cv2.resize(image, (200, 66))
 		steering_angle = self.steering_angle[idx]
 
 		if self.transform:
@@ -106,16 +104,16 @@ class Normalize(object):
 
 
 #For test
-batch_size = 32
-num_workers = 1
-shuffle = False
+batch_size = 4
+num_workers = 8
+shuffle = True
 root_dir = '/home/haojieyu/Dave2/Self-Driving-Car-master/driving_dataset'
 txt_file = 'data.txt'
 transforms_composed = transforms.Compose([
-							transforms.Resize((66,200)), 
-							transforms.ToTensor(),
-							transforms.Normalize((0.5, 0.5, 0.5),(0.5, 0.5, 0.5))
-							])
+                            # transforms.Resize((66,200)),
+                            transforms.ToTensor(),
+                            transforms.Normalize((0.5, 0.5, 0.5),(0.5, 0.5, 0.5))
+                            ])
 driving_dataset = DrivingDataset('/home/haojieyu/Dave2/Self-Driving-Car-master/driving_dataset', 'data.txt', training = True, transform = transforms_composed)
 driving_dataloader = DataLoader(driving_dataset, batch_size = batch_size, shuffle = shuffle, num_workers = num_workers)
 def show_driving_dataloader_batch(sample_batched):

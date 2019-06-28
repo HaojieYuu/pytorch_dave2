@@ -33,10 +33,9 @@ root_dir = args.root_dir
 txt_file = args.txt_file
 training = args.training
 transforms_composed = transforms.Compose([
-							transforms.Resize((66,200)),
-							transforms.ToTensor(),
-							transforms.Normalize((0.5, 0.5, 0.5),(0.5, 0.5, 0.5))
-							])
+                            transforms.ToTensor(),
+                            transforms.Normalize((0.5, 0.5, 0.5),(0.5, 0.5, 0.5))
+                            ])
 driving_dataset = dataLoader.DrivingDataset(root_dir, txt_file, training, transforms_composed)
 driving_dataloader = DataLoader(driving_dataset, batch_size = batch_size, num_workers = num_workers)
 
