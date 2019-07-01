@@ -4,11 +4,11 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import utils, transforms
 import numpy as np
 import os
-from PIL import Image
 import matplotlib.pyplot as plt
 import warnings
-warnings.filterwarnings('ignore', category = UserWarning)
 import cv2
+warnings.filterwarnings('ignore', category = UserWarning)
+
 class DrivingDataset(Dataset):
 	"""driving dataset."""
 
@@ -17,6 +17,7 @@ class DrivingDataset(Dataset):
 		Args:
 			txt_file(string)
 			root_file(string)
+			training(boolean) : True for train and False for test
 			transform (callable, optional): Optional transform to be applied on a sample
 		"""
 		self.root_dir = root_dir
@@ -30,6 +31,8 @@ class DrivingDataset(Dataset):
 				# Converting steering angle which we need to predict from radians
         		# to degrees for fast computation
 				self.steering_angle.append(float(line.split()[1]) * np.pi / 180)
+		# 80% for train
+		# 20% for test
 		if(training):
 			self.img_name = self.img_name[:int(len(self.img_name) * 0.8)]
 			self.steering_angle = self.steering_angle[:int(len(self.steering_angle) * 0.8)]

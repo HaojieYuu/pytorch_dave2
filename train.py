@@ -1,14 +1,14 @@
 from model import Net
-from lossAndOptimizer import createLossAndOptimizer
 import dataLoader
 from torch.utils.data import DataLoader
 import numpy as np
 import torch
-import time
+import torch.nn as nn
 from torchvision import transforms
+import torch.optim as optim
 import matplotlib.pyplot as plt
 import argparse
-
+import time
 
 '''
 if th.cuda.is_available():
@@ -51,7 +51,7 @@ transforms_composed = transforms.Compose([
                             transforms.ToTensor(),
                             transforms.Normalize((0.5, 0.5, 0.5),(0.5, 0.5, 0.5))
                             ])
-driving_dataset = dataLoader.DrivingDataset(root_dir, txt_file, training, transforms_composed) # 
+driving_dataset = dataLoader.DrivingDataset(root_dir, txt_file, training, transforms_composed)
 driving_dataloader = DataLoader(driving_dataset, batch_size = batch_size, shuffle = shuffle, num_workers = num_workers)
 
 #Net
@@ -59,11 +59,11 @@ net = Net()
 # net.to(device)
 net.train()
 
-
 #lossAndOptimizer
 learning_rate = args.learning_rate
 weight_decay = args.weight_decay
-criterion, optimizer = createLossAndOptimizer(net, learning_rate, weight_decay)
+criterion = nn.MSELoss()
+optimizer = optim.Adam(net.parameters(), lr = learning_rate, weight_decay = weight_decay)
 
 #train
 n_epochs = args.n_epochs
@@ -108,17 +108,17 @@ for epoch in range(n_epochs):
         running_loss += current_loss 
         total_train_loss += current_loss
         print('\rEpoch: {}, {:.2%}, t_fwd: {:.2f}, t_bwd: {:.2f}, t_upd: {:.2f}'.format(epoch + 1, (i_batched + 1) / n_minibatches,
-          t_fwd, t_bwd, t_upd),end = '   ')
+            t_fwd, t_bwd, t_upd),end = '   ')
         
         # print('\rEpoch: {}, {:.2%} Loss: {:.3f}, elapsed time: {:.2f}s'.format(epoch + 1, (i_batched + 1) / n_minibatches, running_loss/count, time.time()-start_time), end='')
 
         if (i_batched+1) % (print_every+1) == 0:
-          print("\nEpoch: {}, {:d}% \t train_loss: {:.6f} took: {:.2f}s".format(
-              epoch + 1, int(100 * (i_batched + 1) / n_minibatches), running_loss / count,
-              time.time() - start_time))
-          running_loss = 0.0
-          count = 0
-          start_time = time.time()
+            print("\nEpoch: {}, {:.2%} \t train_loss: {:.6f} took: {:.2f}s".format(
+            epoch + 1, (i_batched + 1) / n_minibatches, running_loss / count,
+            time.time() - start_time))
+            running_loss = 0.0
+            count = 0
+            start_time = time.time()
 
     train_history.append(total_train_loss / n_minibatches)
     print('\nEpoch {} finished, total_train_loss: {:.6f}'.format(epoch + 1, total_train_loss / n_minibatches))
@@ -127,9 +127,11 @@ for epoch in range(n_epochs):
         torch.save({
                     'epoch': epoch,
                     'model_state_dict': net.state_dict(),
-                    'loss': (total_train_loss / n_minibatches),
+                    'loss': (best_error / n_minibatches),
                     'train_history': train_history,
-                    'batch_size': batch_size
+                    'batch_size': batch_size,
+                    'learning_rate': learning_rate,
+                    'weight_decay': weight_decay
                     }, best_model_path)
 
 # print evalution of loss
@@ -140,4 +142,4 @@ plt.plot(x, train_history)
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.title('Evolution of the training loss')
-plt.savefig(save_image_path)
+plt.show()

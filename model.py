@@ -14,11 +14,12 @@ class Net(nn.Module):
 		self.fc2 = nn.Linear(100, 50)
 		self.fc3 = nn.Linear(50, 10)
 		self.fc4 = nn.Linear(10, 1)
-		self.dropout1 = nn.Dropout(p = 0.5)
-		self.dropout2 = nn.Dropout(p = 0.5)
-		self.dropout3 = nn.Dropout(p = 0.5)
+		self.dropout1 = nn.Dropout(p = 0.6)
+		self.dropout2 = nn.Dropout(p = 0.6)
+		self.dropout3 = nn.Dropout(p = 0.6)
 
 	def forward(self, x):
+		# x: [batch_size, C, H, W]
 		x = F.relu(self.conv1(x))
 		x = F.relu(self.conv2(x))
 		x = F.relu(self.conv3(x))

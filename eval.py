@@ -3,7 +3,6 @@ import torch.nn as nn
 from model import Net
 from torch.utils.data import DataLoader
 from torchvision import transforms, utils
-from lossAndOptimizer import createLossAndOptimizer
 from torchvision import transforms
 import dataLoader
 import numpy as np
@@ -39,7 +38,7 @@ transforms_composed = transforms.Compose([
 driving_dataset = dataLoader.DrivingDataset(root_dir, txt_file, training, transforms_composed)
 driving_dataloader = DataLoader(driving_dataset, batch_size = batch_size, num_workers = num_workers)
 
-checkpoint_path = os.path.join('/home/haojieyu/Pytorch_Dave2',args.model)
+checkpoint_path = os.path.join('/home/haojieyu/Pytorch_Dave2', args.model)
 steering_wheel = cv2.imread('steering_wheel.jpg', 0)
 rows, cols = steering_wheel.shape[:2]
 
@@ -81,7 +80,7 @@ with torch.no_grad():
 		prediction = prediction.squeeze().numpy()
 		steering_angles_batched = steering_angles_batched.squeeze().numpy()
 		images_batched = images_batched.numpy()
-		images_batched = images_batched * 0.5 + 0.5 #unnormalize
+		images_batched = images_batched * 0.5 + 0.5 # unnormalize
 		for i in range(len(steering_angles_batched)):
 			cv2.imshow('frame', cv2.resize(images_batched[i].transpose((1, 2, 0)), None, fx = 3, fy = 3))
 
@@ -90,7 +89,7 @@ with torch.no_grad():
 			M = cv2.getRotationMatrix2D((cols / 2, rows / 2), smoothed_angle, 1)
 			dst = cv2.warpAffine(steering_wheel, M, (cols, rows))
 			cv2.imshow('steering wheel', dst)
-			if cv2.waitKey(10) & 0xFF == ord('q'):
+			if cv2.waitKey(10) & 0xFF == ord('q'): # enter q for exit
 				sys.exit(0)
 			print('pred: {:.6f}, actual: {:.6f}'.format(prediction[i] * 180 / np.pi,
 				steering_angles_batched[i] * 180 / np.pi))
