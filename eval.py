@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 from model import Net
+from resnet import ResNet
 from torch.utils.data import DataLoader
 from torchvision import transforms, utils
-from torchvision import transforms
 import dataLoader
 import numpy as np
 import time
@@ -45,7 +45,7 @@ rows, cols = steering_wheel.shape[:2]
 #start eval
 start_time = time.time()
 with torch.no_grad():
-	net = Net()
+	net = ResNet()
 	criterion = nn.MSELoss()
 
 	checkpoint = torch.load(checkpoint_path)
@@ -53,7 +53,9 @@ with torch.no_grad():
 	net.eval()
 
 	#print statistics
-	print('Epoch: {}, Loss: {:.6f}'.format(checkpoint['epoch'], checkpoint['loss']))
+	print('Epoch: {}, Loss: {:.6f}, batch_size: {}, lr: {}, wd: {}'.format(
+		checkpoint['epoch'] + 1, checkpoint['loss'], checkpoint['batch_size'],
+		checkpoint['learning_rate'], checkpoint['weight_decay']))
 	plt.ion()
 	plt.figure(1)
 	train_history = checkpoint['train_history']
@@ -84,14 +86,14 @@ with torch.no_grad():
 		for i in range(len(steering_angles_batched)):
 			cv2.imshow('frame', cv2.resize(images_batched[i].transpose((1, 2, 0)), None, fx = 3, fy = 3))
 
-			degrees = -prediction[i] * 180 / np.pi
+			degrees = prediction[i] * 180 / np.pi
 			smoothed_angle += 0.2 * pow(abs((degrees - smoothed_angle)), 2.0 / 3.0) * (degrees - smoothed_angle) / abs(degrees - smoothed_angle)
-			M = cv2.getRotationMatrix2D((cols / 2, rows / 2), smoothed_angle, 1)
+			M = cv2.getRotationMatrix2D((cols / 2, rows / 2), -smoothed_angle, 1)
 			dst = cv2.warpAffine(steering_wheel, M, (cols, rows))
 			cv2.imshow('steering wheel', dst)
 			if cv2.waitKey(10) & 0xFF == ord('q'): # enter q for exit
 				sys.exit(0)
-			print('pred: {:.6f}, actual: {:.6f}'.format(prediction[i] * 180 / np.pi,
+			print('pred: {:.6f}, actual: {:.6f}'.format(degrees,
 				steering_angles_batched[i] * 180 / np.pi))
 	cv2.destroyAllWindows()
 

@@ -39,19 +39,19 @@ class DrivingDataset(Dataset):
 		else:
 			self.img_name = self.img_name[-int(len(self.img_name) * 0.2) - 1:]
 			self.steering_angle = self.steering_angle[-int(len(self.steering_angle) * 0.2) - 1:]
+
 	def __len__(self):
 		return len(self.steering_angle)
 
 	def __getitem__(self, idx):
-		image = cv2.imread(os.path.join(self.root_dir,self.img_name[idx]))
-		image = image[120:, :, :]
+		image = cv2.imread(os.path.join(self.root_dir,self.img_name[idx]))[-150:, :, :]
 		image = cv2.resize(image, (200, 66))
-		steering_angle = self.steering_angle[idx]
+		new_img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-		if self.transform:
-			image = self.transform(image)
+		if self.transform is not None:
+			new_img = self.transform(new_img)
 
-		return image, steering_angle
+		return new_img, torch.tensor([self.steering_angle[idx]])
 
 '''
 class Rescale(object):
@@ -87,14 +87,13 @@ class Rescale(object):
 class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
 
-    def __call__(self, sample):
-        image, steering_angle = sample
+    def __call__(self, image):
 
         # swap color axis because
         # numpy image: H x W x C
         # torch image: C X H X W
         image = image.transpose((2, 0, 1))
-        return torch.from_numpy(image).float(), torch.tensor([steering_angle]).float()
+        return torch.from_numpy(image).float()
 
 class Normalize(object):
 
@@ -104,33 +103,34 @@ class Normalize(object):
 		#tsfm = transforms.Normalize((0.5, 0.5, 0.5) , (0.5, 0.5, 0.5))
 		#image = tsfm(image)
 		return image, steering_angle
-
-
-#For test
-batch_size = 4
-num_workers = 8
-shuffle = True
-root_dir = '/home/haojieyu/Dave2/Self-Driving-Car-master/driving_dataset'
-txt_file = 'data.txt'
-transforms_composed = transforms.Compose([
-                            # transforms.Resize((66,200)),
-                            transforms.ToTensor(),
-                            transforms.Normalize((0.5, 0.5, 0.5),(0.5, 0.5, 0.5))
-                            ])
-driving_dataset = DrivingDataset('/home/haojieyu/Dave2/Self-Driving-Car-master/driving_dataset', 'data.txt', training = True, transform = transforms_composed)
-driving_dataloader = DataLoader(driving_dataset, batch_size = batch_size, shuffle = shuffle, num_workers = num_workers)
-def show_driving_dataloader_batch(sample_batched):
-	images_batched, steering_angles_batched = sample_batched
-	grid = utils.make_grid(images_batched)
-	plt.imshow(grid.numpy().transpose((1, 2, 0)))
-if(__name__ == '__main__'):
-	for i_batched, sample_batched in enumerate(driving_dataloader):
-		images_batched, steering_angles_batched = sample_batched
-		print(images_batched[0].shape)
-		print(steering_angles_batched * 180 / np.pi)
-		if i_batched == 0 :
-			plt.figure()
-			show_driving_dataloader_batch(sample_batched)
-			plt.show()
-			break
 '''
+
+# For test
+# batch_size = 4
+# num_workers = 4
+# shuffle = False
+# root_dir = '/home/haojieyu/Dave2/Self-Driving-Car-master/driving_dataset'
+# txt_file = 'data.txt'
+# transforms_composed = transforms.Compose([
+#                             transforms.ToTensor(),
+#                             transforms.Normalize((0.5, 0.5, 0.5),(0.5, 0.5, 0.5))
+#                             ])
+# driving_dataset = DrivingDataset('/home/haojieyu/Dave2/Self-Driving-Car-master/driving_dataset', 'data.txt', training = False, transform = transforms_composed)
+# driving_dataloader = DataLoader(driving_dataset, batch_size = batch_size, shuffle = shuffle, num_workers = num_workers)
+
+# def show_driving_dataloader_batch(sample_batched):
+# 	images_batched, steering_angles_batched = sample_batched
+# 	grid = utils.make_grid(images_batched * 0.5 + 0.5)
+# 	plt.imshow(grid.numpy().transpose((1, 2, 0)))
+
+# if(__name__ == '__main__'):
+# 	for i_batched, sample_batched in enumerate(driving_dataloader):
+# 		images_batched, steering_angles_batched = sample_batched
+# 		print(images_batched)
+# 		print(images_batched[0].shape)
+# 		print(steering_angles_batched * 180 / np.pi)
+# 		if i_batched == 5:
+# 			plt.figure()
+# 			show_driving_dataloader_batch(sample_batched)
+# 			plt.show()
+# 			break

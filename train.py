@@ -1,4 +1,5 @@
 from model import Net
+from resnet import ResNet
 import dataLoader
 from torch.utils.data import DataLoader
 import numpy as np
@@ -55,7 +56,7 @@ driving_dataset = dataLoader.DrivingDataset(root_dir, txt_file, training, transf
 driving_dataloader = DataLoader(driving_dataset, batch_size = batch_size, shuffle = shuffle, num_workers = num_workers)
 
 #Net
-net = Net()
+net = ResNet()
 # net.to(device)
 net.train()
 
@@ -85,8 +86,6 @@ for epoch in range(n_epochs):
     for i_batched, sample_batched in enumerate(driving_dataloader, 0):
 
         images_batched, steering_angles_batched = sample_batched
-        images_batched = images_batched.float()
-        steering_angles_batched = steering_angles_batched.float()
 
         optimizer.zero_grad()
 
@@ -107,15 +106,15 @@ for epoch in range(n_epochs):
         current_loss = loss.item()
         running_loss += current_loss 
         total_train_loss += current_loss
-        print('\rEpoch: {}, {:.2%}, t_fwd: {:.2f}, t_bwd: {:.2f}, t_upd: {:.2f}'.format(epoch + 1, (i_batched + 1) / n_minibatches,
-            t_fwd, t_bwd, t_upd),end = '   ')
+        # print('\rEpoch: {}, {:.2%}, t_fwd: {:.2f}, t_bwd: {:.2f}, t_upd: {:.2f}'.format(epoch + 1, (i_batched + 1) / n_minibatches,
+        # t_fwd, t_bwd, t_upd),end = '   ')
         
-        # print('\rEpoch: {}, {:.2%} Loss: {:.3f}, elapsed time: {:.2f}s'.format(epoch + 1, (i_batched + 1) / n_minibatches, running_loss/count, time.time()-start_time), end='')
+        print('\rEpoch: {}, {:.2%} Loss: {:.3f}, elapsed time: {:.2f}s'.format(epoch + 1, (i_batched + 1) / n_minibatches, running_loss / count, time.time() - start_time), end='')
 
         if (i_batched+1) % (print_every+1) == 0:
             print("\nEpoch: {}, {:.2%} \t train_loss: {:.6f} took: {:.2f}s".format(
-            epoch + 1, (i_batched + 1) / n_minibatches, running_loss / count,
-            time.time() - start_time))
+                epoch + 1, (i_batched + 1) / n_minibatches, running_loss / count,
+                time.time() - start_time))
             running_loss = 0.0
             count = 0
             start_time = time.time()
@@ -135,11 +134,11 @@ for epoch in range(n_epochs):
                     }, best_model_path)
 
 # print evalution of loss
-print("\nTraining Finished, took {:.2f}s".format(time.time() - training_start_time))
-x = np.arange(1, len(train_history) + 1)
-plt.figure()
-plt.plot(x, train_history)
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.title('Evolution of the training loss')
-plt.show()
+# print("\nTraining Finished, took {:.2f}s".format(time.time() - training_start_time))
+# x = np.arange(1, len(train_history) + 1)
+# plt.figure()
+# plt.plot(x, train_history)
+# plt.xlabel('Epoch')
+# plt.ylabel('Loss')
+# plt.title('Evolution of the training loss')
+# plt.show()

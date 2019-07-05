@@ -1,5 +1,4 @@
 model
 models_history
 __pycache__
-test.sh
-loccal.sh
+*.sh
